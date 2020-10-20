@@ -11,6 +11,7 @@ namespace IndexBuilder
     {      
         public static DateTime PlannedStartTime = new DateTime(2020, 10, 16, 20, 30, 0, DateTimeKind.Local);
         public static DateTime RunningStartTime = PlannedStartTime;
+        public static TimeSpan RunningTimeSpan = new TimeSpan();
         static void Main(string[] args)
         {
             
@@ -62,6 +63,7 @@ namespace IndexBuilder
                         cleanFileName = cleanFileName.Replace(@".avi", "");
                         output.Append($"<i>{cleanFileName}</i> - Estimated Start Time {RunningStartTime}");
                         RunningStartTime = RunningStartTime.Add(mediaInfo.Duration);
+                        RunningTimeSpan = RunningTimeSpan.Add(mediaInfo.Duration);
                         RunningTotal += mediaInfo.Duration;
                         output.AppendLine($"</li>");
                     }
@@ -70,6 +72,7 @@ namespace IndexBuilder
                 output.AppendLine($"</ul>");
             }
             output.AppendLine($"<li>Total Titles: {TotalCount}</li>");
+            output.AppendLine($"<li>Total Runtime: {RunningTimeSpan}</li>");
             output.AppendLine("</ul>");
             var outputStream = new FileStream(workingDirectory + outputFileName, FileMode.OpenOrCreate);
             var outputStreamWriter = new StreamWriter(outputStream);
@@ -90,7 +93,7 @@ namespace IndexBuilder
             var directoryEnumeration = Directory.EnumerateDirectories(DirectoryName);
             if (directoryEnumeration.Count() > 0) 
             { 
-                output.AppendLine($"<b><h1>{cleanDirectory}</h1></b>");
+                output.AppendLine($"<b><h1>{cleanDirectory} estimated to start at {RunningStartTime}</h1></b>");
             }
             else
             {
@@ -112,32 +115,32 @@ namespace IndexBuilder
                         var mediaInfo = ffProbe.GetMediaInfo(fName);
                         RunningTotal += mediaInfo.Duration;
                         var cleanFileName = fName.Replace(DirectoryName, "");
-                        cleanFileName = cleanFileName.Replace(@"H:\Streaming Videos\First Playlist Series\", "");
-                        cleanFileName = cleanFileName.Replace(@"H:\Videos\Spooktober\", "");
                         cleanFileName = cleanFileName.Replace(@".mp4", "");
                         cleanFileName = cleanFileName.Replace(@".mpg", "");
                         cleanFileName = cleanFileName.Replace(@".mkv", "");
                         cleanFileName = cleanFileName.Replace(@".mov", "");
                         cleanFileName = cleanFileName.Replace(@".avi", "");
                         cleanFileName = cleanFileName.Replace(@".divx", "");
-                        output.Append($"<i>{cleanFileName}</i> - Estimated Start: {RunningStartTime}");
+                        output.Append($"<div class='starttime'>{RunningStartTime}</div><div class='filename'><i>{cleanFileName}</i></div>");
                         RunningStartTime = RunningStartTime.Add(mediaInfo.Duration);
+                        RunningTimeSpan = RunningTimeSpan.Add(mediaInfo.Duration);
                         output.AppendLine($"</li>");
                     }
                     catch (Exception ex)
                     {
                         
                         var cleanFileName = fName.Replace(DirectoryName, "");
-                        cleanFileName = cleanFileName.Replace(@"H:\Streaming Videos\First Playlist Series\", "");
-                        cleanFileName = cleanFileName.Replace(@"H:\Videos\Spooktober\", "");
                         cleanFileName = cleanFileName.Replace(@".mp4", "");
                         cleanFileName = cleanFileName.Replace(@".mpg", "");
                         cleanFileName = cleanFileName.Replace(@".mkv", "");
                         cleanFileName = cleanFileName.Replace(@".mov", "");
                         cleanFileName = cleanFileName.Replace(@".avi", "");
                         cleanFileName = cleanFileName.Replace(@".divx", "");
-                        output.Append($"<i>{cleanFileName}</i> - Estimated Start: {RunningStartTime}");
+                        output.Append($"<div class='starttime'>{RunningStartTime}</div><div class='filename'><i>{cleanFileName}</i></div>");
+                        // assume an average length of 25 minutes based on what normally failed for me and the average length of those things
+                        // ideally though, you'd want to remove these from the list and identify/re-source.
                         RunningStartTime = RunningStartTime.Add(new TimeSpan(0, 25, 0));
+                        RunningTimeSpan = RunningTimeSpan.Add(new TimeSpan(0, 25, 0));
                         output.AppendLine($"</li>");
                     }
                     count++;
@@ -153,10 +156,6 @@ namespace IndexBuilder
                     output.AppendLine("<ul>");            
                     output.Append(outputResult.Item1);
                     count += outputResult.Item2;
-                    //if (s.Contains("Stand") && s.Contains("Alone"))
-                    //{
-     
-                    //}
                     output.AppendLine("</ul>");
                 }
             }
